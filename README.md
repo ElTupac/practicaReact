@@ -1,4 +1,4 @@
-# practicaReact
+# Sistema de notas en React
 Pequenia practica con React
 
 Una webApp de notas donde cada usuario podra administrar sus notas.
