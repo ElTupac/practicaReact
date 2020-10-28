@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+const User = require('../Controllers/userController');
 
 class Registro extends Component{
     confirmacionRegistro(evento){
@@ -11,6 +12,10 @@ class Registro extends Component{
                 'password': this.password.value,
                 'mail': this.mail.value
             }
+
+            User.createUser(datos.user, datos.mail, datos.password).then(res => {
+                console.log(res);
+            });
         }else{
             document.getElementById("noCoinciden").style.display = "block";
         }
