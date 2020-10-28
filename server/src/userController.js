@@ -1,6 +1,6 @@
 const User = require('./userSchema');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const jwt = require('./jwtController');
 
 const ultraSecreta = 'papurro'; //Despues dejarla en un .env por fuera
 
@@ -47,41 +47,55 @@ module.exports = {
 
     async loguearUsuario(req, res){
         var data = req.body;
+        
         const savedPass = await User.findOne({ 'user': data.user }, 'password');
-        //Usar este bloque para comparar la contrasenia con la guardada en el server
-        bcrypt.compare(data.password, savedPass.password, function(err, response) {
-            if(err) throw err;
-            else{
-                //Si esta aca tendria que ser valida la contrasenia
-                if(response){
-                    console.log(`${data.user} logueado`);
-                    return res.json({'ok': true, 'token': webTokenGen(ultraSecreta)});
-                }else{
-                    console.log(`${data.user} login error`);
-                    return res.json({'ok': false, 'error': 'authentication error'});
+        if(savedPass){
+            bcrypt.compare(data.password, savedPass.password, function(err, response) {
+                if(err) throw err;
+                else{
+                    //Si esta aca tendria que ser valida la contrasenia
+                    if(response){
+                        console.log(`${data.user} logueado`);
+                        return res.json({'ok': true, 'token': jwt.webTokenGen(ultraSecreta), 'user': data.user});
+                    }else{
+                        console.log(`${data.user} login error`);
+                        return res.json({'ok': false, 'error': 'authentication error'});
+                    }
                 }
-            }
-        }); 
+            }); 
+        }else{
+            return res.json({'ok': false, 'error': 'authentication error'});
+        }
+    
+    },
 
-        return res.status(200);
+    async checkLogin(req, res){
+        const data = req.body;
+        const token = req.headers['access-token'];
+        if(await userExists(data.user)){
+            if(token){
+                if(jwt.checkToken(ultraSecreta, token)){
+                    return res.json({'ok': true, 'token': jwt.webTokenGen(ultraSecreta), 'user': data.user});
+                }else{
+                    return res.json({'ok': false, 'error': 'token invalido'});
+                }
+            }else{
+                return res.json({'ok': false, 'error': 'no token'});
+            }
+        }else{
+            return res.json({'ok': false, 'error': 'bad user, hit him'});
+        }
     }
-}
+};
 
 async function userExists(user){
     var user = await User.findOne({ 'user': user });
     if(user) return true;
     else return false;
-}
+};
 
 async function mailExists(mail){
     var mail = await User.findOne({ 'mail': mail });
     if(mail) return true;
     else return false;
-}
-
-function webTokenGen(masterKey){
-    const payload = { check: true };
-    return jwt.sign(payload, masterKey, {
-        expiresIn: 60
-    });
-}
+};
