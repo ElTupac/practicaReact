@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+
 const User = require('../Controllers/userController');
 
 class Login extends Component{
@@ -13,13 +14,14 @@ class Login extends Component{
 
         User.loginUser(datos.user, datos.password).then(res => {
             if(res.ok){
-                alert("Logueado prro");
+                
                 const credenciales = {
                     'user': res.user,
                     'token': res.token
                 }
 
                 localStorage.setItem('credenciales', JSON.stringify(credenciales));
+                this.props.isLogged();
             }else{
                 document.getElementById("noCoinciden").style.display = "block";
                 document.getElementById('botonLogin').disabled = false;
@@ -27,7 +29,8 @@ class Login extends Component{
         });
     }
 
-    render(){
+    constructor(props){
+        super(props);
         var credenciales = localStorage.getItem('credenciales');
         if(credenciales){
             credenciales = JSON.parse(credenciales);
@@ -37,19 +40,23 @@ class Login extends Component{
                     credenciales.token = res.token;
                     localStorage.setItem('credenciales', JSON.stringify(credenciales));
                     document.getElementById('botonLogin').disabled = true;
-                    alert("Logueado prro");
+                    
+                    this.props.isLogged();
                 }else{
                     localStorage.removeItem('credenciales');
                 }
             });
         }
+    }
 
+    render(){
         return <div className='centeredContainer'>
             <h1 className='h1Tittle'>Login</h1>
             <form onSubmit={this.loginUser.bind(this)}>
                 <input type='text' placeholder='Nombre de usuario' required ref={node => this.userName = node}/>
                 <input type='password' placeholder='Contrasenia' required ref={node => this.password = node}/>
                 <p className="alerta" id="noCoinciden">Credenciales incorrectas</p>
+                <a href='/#' onClick={() => {this.props.handler()}}>Registrarse</a>
                 <button id='botonLogin'>Entrar</button>
             </form>
         </div>

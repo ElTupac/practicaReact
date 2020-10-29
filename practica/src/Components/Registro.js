@@ -15,6 +15,7 @@ class Registro extends Component{
 
             User.createUser(datos.user, datos.mail, datos.password).then(res => {
                 console.log(res);
+                this.props.handler();
             });
         }else{
             document.getElementById("noCoinciden").style.display = "block";
@@ -32,6 +33,7 @@ class Registro extends Component{
                 <input type='password' placeholder='Repita la contrasenia' required ref={node => this.password2 = node}/>
                 <p className="alerta" id="noCoinciden">No coinciden las contrasenias</p>
                 <input type="email" placeholder="Ingresa un mail" required ref={node => this.mail = node}/>
+                <a href='/#' onClick={() => {this.props.handler()}}>Volver a loguear</a>
                 <button>Registrar</button>
             </form>
         </div>
